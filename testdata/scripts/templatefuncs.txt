@@ -1,15 +1,29 @@
 [!windows] chmod 755 bin/chezmoi-output-test
 [windows] unix2dos bin/chezmoi-output-test.cmd
 
+# test ioreg template function
 [darwin] chezmoi execute-template '{{ index ioreg "IOKitBuildVersion" }}'
 [darwin] stdout 'Darwin Kernel Version'
 
+# test include template function with absolute path
+exec echo {{ "$HOME/.include" }}
+stdin stdout
+chezmoi execute-template
+cmpenv stdout golden/include-abspath
+
+# test include template function with relative paths
+chezmoi execute-template '{{ include ".include" }}'
+cmp stdout golden/include-relpath
+
+# test joinPath template function
 chezmoi execute-template '{{ joinPath "a" "b" }}'
 stdout a${/}b
 
+# test lookPath template function
 chezmoi execute-template '{{ lookPath "go" }}'
 stdout go${exe}
 
+# test stat template function
 chezmoi execute-template '{{ (stat ".").isDir }}'
 stdout true
 
@@ -31,3 +45,11 @@ set out=%*
 set out=%out:\=%
 echo %out%
 endlocal
+-- golden/include-abspath --
+$HOME/.include
+-- golden/include-relpath --
+# contents of ~/.local/share/chezmoi/.include
+-- home/user/.include --
+# contents of $HOME/.include
+-- home/user/.local/share/chezmoi/.include --
+# contents of ~/.local/share/chezmoi/.include
