@@ -29,6 +29,8 @@
 * [Use scripts to perform actions](#use-scripts-to-perform-actions)
   * [Understand how scripts work](#understand-how-scripts-work)
   * [Install packages with scripts](#install-packages-with-scripts)
+  * [Run a script only when the contents of another file changes](#run-a-script-only-when-the-contents-of-another-file-changes)
+  * [Use `brew bundle` to install packages on macOS when the contents of `~/.Brewfile` changes](#use-brew-bundle-to-install-packages-on-macos-when-the-contents-of-brewfile-changes)
 * [Use chezmoi with GitHub Codespaces, Visual Studio Codespaces, Visual Studio Code Remote - Containers](#use-chezmoi-with-github-codespaces-visual-studio-codespaces-visual-studio-code-remote---containers)
 * [Use chezmoi on Windows](#use-chezmoi-on-windows)
   * [Detect Windows Subsystem for Linux (WSL)](#detect-windows-subsystem-for-linux-wsl)
@@ -903,6 +905,33 @@ This script can also be a template. For example, if you create
     {{ end -}}
 
 This will install `ripgrep` on both Debian/Ubuntu Linux systems and macOS.
+
+### Run a script only when the contents of another file changes
+
+`run_` scripts are run every time you run `chezmoi apply`, whereas `run_once_`
+scripts are only run when their contents have changed. Sometimes you want to run
+a script only when the contents of another file changes.
+
+You can do this by including a checksum of the other file in the script in a
+`run_once_` script. This can be done with either a comment in the script or a
+non-mutating command like `echo`.
+
+For example, if you want to run `run_once_script.sh` whenever `.file` changes in
+your source directory, you could put either of the following lines in the file:
+
+    # {{ include ".file" | sha256sum }}
+
+or
+
+    echo .file SHA256: {{ include ".file" | sha256sum }}
+
+Whenever the contents of `.file` changes then so will its SHA256 sum, so the
+contents of `run_once_script.sh` will change, and so `chezmoi apply` will re-run
+it.
+
+### Use `brew bundle` to install packages on macOS when the contents of `~/.Brewfile` changes
+
+FIXME
 
 ## Use chezmoi with GitHub Codespaces, Visual Studio Codespaces, Visual Studio Code Remote - Containers
 
